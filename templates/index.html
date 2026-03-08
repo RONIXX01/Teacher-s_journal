@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Журнал преподавателя</title>
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background-image: url("{{ url_for('static', filename='background.png') }}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        input, button {
+            margin: 5px;
+        }
+        table {
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 6px 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Ввод оценки</h2>
+<input id="student" placeholder="Ученик">
+<input id="subject" placeholder="Предмет">
+<input id="grade" type="number" min="1" max="5" placeholder="Оценка">
+<button onclick="sendGrade()">Сохранить</button>
+
+<h2>Журнал</h2>
+<table id="table"></table>
+
+<script>
+
+function MyUpperCase(str) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function sendGrade() {
+    fetch("/grades", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            student: MyUpperCase(document.getElementById("student").value),
+            subject: MyUpperCase(document.getElementById("subject").value),
+            grade: document.getElementById("grade").value
+        })
+    }).then(() => loadGrades());
+}
+
+
+function loadGrades() {
+    fetch("/grades")
+        .then(r => r.json())
+        .then(data => {
+            let subjects = new Set();
+            for (let s in data)
+                for (let sub in data[s])
+                    subjects.add(sub);
+
+            let html = "<tr><th>Ученик</th>";
+            subjects.forEach(s => html += `<th>${MyUpperCase(s)}</th>`);
+            html += "</tr>";
+
+            for (let student in data) {
+                html += `<tr><td>${MyUpperCase(student)}</td>`;
+                subjects.forEach(sub => {
+                    html += `<td>${data[student][sub] || ""}</td>`;
+                });
+                html += "</tr>";
+            }
+            document.getElementById("table").innerHTML = html;
+        });
+}
+
+loadGrades();
+</script>
+
+</body>
+</html>
