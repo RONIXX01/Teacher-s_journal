@@ -3,7 +3,7 @@ import json
 import os
 
 app = Flask(__name__)
-DATA_FILE = "grades.json"
+DATA_FILE = "Teacher's_journal/grades.json"
 
 def load_data():
     if not os.path.exists(DATA_FILE):
